@@ -1,0 +1,162 @@
+pipeline {
+  agent any
+
+  parameters {
+    choice(
+      name: 'CI_BUILD_NUMBER',
+      choices: [],
+      description: 'Select the main-branch CI build number whose artifact will be deployed'
+    )
+    choice(
+      name: 'ENVIRONMENT',
+      choices: ['DEV', 'TEST', 'ACC', 'PROD'],
+      description: 'Target deployment environment'
+    )
+    booleanParam(
+      name: 'SKIP_TESTS',
+      defaultValue: false,
+      description: 'Skip pre-deployment verification (emergency only)'
+    )
+  }
+
+  environment {
+    ENV_PORTS = [
+      'DEV':  3001,
+      'TEST': 3002,
+      'ACC':  3003,
+      'PROD': 3004
+    ]
+    CONTAINER_PREFIX = 'expense-tracker'
+  }
+
+  stages {
+    stage('Validate Parameters') {
+      steps {
+        script {
+          if (!params.CI_BUILD_NUMBER) {
+            error('CI_BUILD_NUMBER is required')
+          }
+          echo "Deploying CI Build #${params.CI_BUILD_NUMBER} to ${params.ENVIRONMENT}"
+        }
+      }
+    }
+
+    stage('Retrieve Artifact from CI') {
+      steps {
+        script {
+          def artifactName = "expense-tracker-${params.CI_BUILD_NUMBER}.tar.gz"
+          copyArtifacts(
+            projectName: 'expense-tracker/main',
+            selector: specific("${params.CI_BUILD_NUMBER}"),
+            filter: artifactName,
+            target: 'deploy-artifact',
+            flatten: true
+          )
+
+          sh '''
+            mkdir -p deploy
+            tar -xzf deploy-artifact/${artifactName} -C deploy/
+            ls -la deploy/
+          '''
+        }
+      }
+    }
+
+    stage('Build Docker Image') {
+      steps {
+        script {
+          def containerName = "${CONTAINER_PREFIX}-${params.ENVIRONMENT.toLowerCase()}"
+          def imageName = "${containerName}:${params.CI_BUILD_NUMBER}"
+          def port = ENV_PORTS[params.ENVIRONMENT]
+
+          docker.build(imageName, "./deploy")
+
+          env.DOCKER_IMAGE = imageName
+          env.CONTAINER_NAME = containerName
+          env.HOST_PORT = port.toString()
+        }
+      }
+    }
+
+    stage('Deploy Container') {
+      steps {
+        script {
+          def containerName = env.CONTAINER_NAME
+          def imageName = env.DOCKER_IMAGE
+          def port = env.HOST_PORT
+
+          sh """
+            docker stop ${containerName} 2>/dev/null || true
+            docker rm ${containerName} 2>/dev/null || true
+          """
+
+          sh """
+            docker run -d \
+              --name ${containerName} \
+              --restart unless-stopped \
+              -p ${port}:80 \
+              ${imageName}
+          """
+
+          echo "✅ Container ${containerName} started on port ${port}"
+        }
+      }
+    }
+
+    stage('Verify Deployment') {
+      when {
+        expression { !params.SKIP_TESTS }
+      }
+      steps {
+        script {
+          def port = env.HOST_PORT
+          def maxAttempts = 10
+          def attempt = 0
+
+          while (attempt < maxAttempts) {
+            try {
+              sh "curl -f -s http://localhost:${port} > /dev/null"
+              echo "✅ Health check passed on port ${port}"
+              break
+            } catch (e) {
+              attempt++
+              if (attempt >= maxAttempts) {
+                error("❌ Health check failed after ${maxAttempts} attempts")
+              }
+              echo "⏳ Attempt ${attempt}/${maxAttempts} - waiting for container..."
+              sleep 5
+            }
+          }
+        }
+      }
+    }
+
+    stage('Display Deployment Info') {
+      steps {
+        script {
+          def port = env.HOST_PORT
+          echo "==========================================="
+          echo "🚀 DEPLOYMENT SUCCESSFUL"
+          echo "==========================================="
+          echo "CI Build Number: ${params.CI_BUILD_NUMBER}"
+          echo "Environment: ${params.ENVIRONMENT}"
+          echo "Container: ${env.CONTAINER_NAME}"
+          echo "Access URL: http://localhost:${port}"
+          echo "==========================================="
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      cleanWs()
+    }
+    failure {
+      script {
+        sh "docker stop ${env.CONTAINER_NAME} 2>/dev/null || true"
+        sh "docker rm ${env.CONTAINER_NAME} 2>/dev/null || true"
+      }
+    }
+  }
+}
