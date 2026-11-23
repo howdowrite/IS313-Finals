@@ -87,7 +87,7 @@ pipeline {
             --exclude=sonar-project.properties \
             dist/ Dockerfile nginx.conf sonar-project.properties
         '''
-        archiveArtifacts artifacts: 'expense-tracker-${BUILD_NUMBER}.tar.gz', fingerprint: true
+        archiveArtifacts artifacts: "expense-tracker-${BUILD_NUMBER}.tar.gz", fingerprint: true
       }
     }
   }
