@@ -2,10 +2,10 @@ pipeline {
   agent any
 
   parameters {
-    choice(
+    string(
       name: 'CI_BUILD_NUMBER',
-      choices: [],
-      description: 'Select the main-branch CI build number whose artifact will be deployed'
+      defaultValue: '',
+      description: 'CI build number from main branch (e.g., 18) whose artifact will be deployed'
     )
     choice(
       name: 'ENVIRONMENT',
@@ -27,6 +27,7 @@ pipeline {
       'PROD': 3004
     ]
     CONTAINER_PREFIX = 'expense-tracker'
+    DOCKERHUB_CREDS = credentials('dockerhub-credentials')
   }
 
   stages {
@@ -46,7 +47,7 @@ pipeline {
         script {
           def artifactName = "expense-tracker-${params.CI_BUILD_NUMBER}.tar.gz"
           copyArtifacts(
-            projectName: 'expense-tracker/main',
+            projectName: 'Multibranch-Pipeline/main',
             selector: specific("${params.CI_BUILD_NUMBER}"),
             filter: artifactName,
             target: 'deploy-artifact',
@@ -69,6 +70,7 @@ pipeline {
           def imageName = "${containerName}:${params.CI_BUILD_NUMBER}"
           def port = ENV_PORTS[params.ENVIRONMENT]
 
+          sh "echo \${DOCKERHUB_CREDS_PSW} | docker login -u \${DOCKERHUB_CREDS_USR} --password-stdin"
           docker.build(imageName, "./deploy")
 
           env.DOCKER_IMAGE = imageName
