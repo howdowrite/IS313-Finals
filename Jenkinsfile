@@ -36,6 +36,7 @@ pipeline {
     stage('SonarQube Analysis') {
       when { branch 'main' }
       steps {
+        tool 'SonarQubeScanner'
         withSonarQubeEnv('SonarQube') {
           sh '''
             sonar-scanner \
