@@ -28,25 +28,7 @@ pipeline {
       }
       post {
         always {
-          publishTestResults testResultsPattern: '**/test-results/*.xml'
-        }
-      }
-    }
-
-    stage('Generate Coverage') {
-      when {
-        anyOf {
-          branch 'develop'
-          branch 'main'
-          branch 'feature/*'
-        }
-      }
-      steps {
-        sh 'npm run coverage'
-      }
-      post {
-        always {
-          publishCoverage adapters: [coberturaAdapter('coverage/cobertura-coverage.xml')]
+          junit 'test-results/junit.xml'
         }
       }
     }
