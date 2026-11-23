@@ -3,8 +3,6 @@ pipeline {
 
   tools {
     nodejs 'NodeJS-20'
-    sonarRunner 'SonarQubeScanner'
-    hudson.plugins.sonar.SonarRunnerInstallation 'SonarQubeScanner'
   }
 
   environment {
@@ -38,6 +36,7 @@ pipeline {
     stage('SonarQube Analysis') {
       when { branch 'main' }
       steps {
+        tool name: 'SonarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
         withSonarQubeEnv('SonarQube') {
           sh '''
             sonar-scanner \
