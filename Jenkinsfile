@@ -3,6 +3,7 @@ pipeline {
 
   tools {
     nodejs 'NodeJS-20'
+    sonarqube 'SonarQubeScanner'
   }
 
   environment {
@@ -36,10 +37,9 @@ pipeline {
     stage('SonarQube Analysis') {
       when { branch 'main' }
       steps {
-        tool name: 'SonarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
         withSonarQubeEnv('SonarQube') {
           sh '''
-            ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
+            sonar-scanner \
               -Dsonar.projectKey=expense-tracker \
               -Dsonar.projectName="Expense Tracker" \
               -Dsonar.projectVersion=1.0.${BUILD_NUMBER} \
