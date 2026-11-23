@@ -33,24 +33,6 @@ pipeline {
       }
     }
 
-    stage('Generate Coverage') {
-      when {
-        anyOf {
-          branch 'develop'
-          branch 'main'
-          branch 'feature/*'
-        }
-      }
-      steps {
-        sh 'npm run coverage'
-      }
-      post {
-        always {
-          publishCoverage adapters: [coberturaAdapter('coverage/cobertura-coverage.xml')]
-        }
-      }
-    }
-
     stage('SonarQube Analysis') {
       when { branch 'main' }
       steps {
