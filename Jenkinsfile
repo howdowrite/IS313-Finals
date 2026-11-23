@@ -36,10 +36,10 @@ pipeline {
     stage('SonarQube Analysis') {
       when { branch 'main' }
       steps {
-        tool 'SonarQubeScanner'
+        tool name: 'SonarQubeScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'
         withSonarQubeEnv('SonarQube') {
           sh '''
-            sonar-scanner \
+            ${SONAR_SCANNER_HOME}/bin/sonar-scanner \
               -Dsonar.projectKey=expense-tracker \
               -Dsonar.projectName="Expense Tracker" \
               -Dsonar.projectVersion=1.0.${BUILD_NUMBER} \
