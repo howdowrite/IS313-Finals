@@ -21,7 +21,9 @@ pipeline {
 
   environment {
     CONTAINER_PREFIX = 'expense-tracker'
-    DOCKERHUB_CREDS = credentials('dockerhub-credentials')
+
+    //Commenting this out in my version but it should be left in incase its needed
+    //DOCKERHUB_CREDS = credentials('dockerhub-credentials')
   }
 
   stages {
@@ -65,7 +67,8 @@ pipeline {
           def ports = [DEV: 3001, TEST: 3002, ACC: 3003, PROD: 3004]
           def port = ports[params.ENVIRONMENT]
 
-          sh "echo \${DOCKERHUB_CREDS_PSW} | docker login -u \${DOCKERHUB_CREDS_USR} --password-stdin"
+          //Commenting this out in my version but it should be left in incase its needed
+          //sh "echo \${DOCKERHUB_CREDS_PSW} | docker login -u \${DOCKERHUB_CREDS_USR} --password-stdin"
           docker.build(imageName, "./deploy")
 
           env.DOCKER_IMAGE = imageName
