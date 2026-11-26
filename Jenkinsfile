@@ -47,6 +47,8 @@ pipeline {
               -Dsonar.projectVersion=1.0.${BUILD_NUMBER} \
               -Dsonar.sources=src \
               -Dsonar.tests=tests \
+              -Dsonar.test.inclusions=**/*.test.ts,**/*.test.tsx \
+              -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/coverage/**,**/*.d.ts,**/tests/** \
               -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info
           '''
         }
