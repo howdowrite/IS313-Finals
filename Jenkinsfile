@@ -34,11 +34,12 @@ pipeline {
     }
 
 // had to rename sonarQubeScanner to sonarScanner to work in docker setup.
+// had to also rename sonarQube to sonarQube-Lab to work in docker setup.
 // I won't push the change on my end only this note so that remote repo still works for you.
     stage('SonarQube Analysis') {
       when { branch 'main' }
       steps {
-        withSonarQubeEnv('SonarQube') {
+        withSonarQubeEnv('SonarQube-Lab') {
           sh '''
             /var/jenkins_home/tools/hudson.plugins.sonar.SonarRunnerInstallation/SonarScanner/bin/sonar-scanner \
               -Dsonar.projectKey=expense-tracker \
