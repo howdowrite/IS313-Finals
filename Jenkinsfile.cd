@@ -50,11 +50,11 @@ pipeline {
             flatten: true
           )
 
-          sh '''
+          sh """
             mkdir -p deploy
-            tar -xzf deploy-artifact/${artifactName} -C deploy/
+            tar -xzf "deploy-artifact/${artifactName}" -C deploy/
             ls -la deploy/
-          '''
+          """
         }
       }
     }
