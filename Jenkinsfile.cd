@@ -115,7 +115,7 @@ pipeline {
 
           while (attempt < maxAttempts) {
             try {
-              sh "curl -f -S http://localhost:${port} > /dev/null"
+              sh "curl -f -S http://host.docker.internal:${port} > /dev/null"
               echo "✅ Health check passed on port ${port}"
               break
             } catch (e) {
