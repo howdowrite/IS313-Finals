@@ -20,12 +20,6 @@ pipeline {
   }
 
   environment {
-    ENV_PORTS = [
-      'DEV':  3001,
-      'TEST': 3002,
-      'ACC':  3003,
-      'PROD': 3004
-    ]
     CONTAINER_PREFIX = 'expense-tracker'
     DOCKERHUB_CREDS = credentials('dockerhub-credentials')
   }
@@ -68,7 +62,8 @@ pipeline {
         script {
           def containerName = "${CONTAINER_PREFIX}-${params.ENVIRONMENT.toLowerCase()}"
           def imageName = "${containerName}:${params.CI_BUILD_NUMBER}"
-          def port = ENV_PORTS[params.ENVIRONMENT]
+          def ports = [DEV: 3001, TEST: 3002, ACC: 3003, PROD: 3004]
+          def port = ports[params.ENVIRONMENT]
 
           sh "echo \${DOCKERHUB_CREDS_PSW} | docker login -u \${DOCKERHUB_CREDS_USR} --password-stdin"
           docker.build(imageName, "./deploy")
