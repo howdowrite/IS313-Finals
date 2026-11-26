@@ -81,16 +81,7 @@ pipeline {
       steps {
         sh '''
           tar -czf expense-tracker-${BUILD_NUMBER}.tar.gz \
-            --exclude=node_modules \
-            --exclude=coverage \
-            --exclude=.git \
-            --exclude=.gitignore \
-            --exclude=*.md \
-            --exclude=Jenkinsfile* \
-            --exclude=Dockerfile \
-            --exclude=nginx.conf \
-            --exclude=sonar-project.properties \
-            dist/ Dockerfile nginx.conf sonar-project.properties
+            dist/ Dockerfile nginx.conf 
         '''
         archiveArtifacts artifacts: "expense-tracker-${BUILD_NUMBER}.tar.gz", fingerprint: true
       }
