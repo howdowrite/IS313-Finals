@@ -43,7 +43,7 @@ pipeline {
         script {
           def artifactName = "expense-tracker-${params.CI_BUILD_NUMBER}.tar.gz"
           copyArtifacts(
-            projectName: 'IS313-CI/main',
+            projectName: 'finals-ci/main',
             selector: specific("${params.CI_BUILD_NUMBER}"),
             filter: artifactName,
             target: 'deploy-artifact',
