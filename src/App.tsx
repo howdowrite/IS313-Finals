@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import type { Expense } from './utils/expenseCalculator';
 import { ExpenseForm } from './components/ExpenseForm';
 import { ExpenseList } from './components/ExpenseList';
@@ -9,16 +9,19 @@ import './App.css';
 
 function App() {
   const { expenses: allExpenses, isLoading, loadDemoExpenses } = useExpenses();
-  const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>(allExpenses);
+  const [filters, setFilters] = useState<{ category: Expense['category'] | 'All'; startDate: string; endDate: string; search: string }>({
+    category: 'All', startDate: '', endDate: '', search: '',
+  });
 
-  // Update filtered expenses when allExpenses changes (initial load)
-  useMemo(() => {
-    setFilteredExpenses(allExpenses);
-  }, [allExpenses]);
+  const filteredExpenses = allExpenses.filter(expense => {
+    const matchesCategory = filters.category === 'All' || expense.category === filters.category;
+    const matchesStart = !filters.startDate || expense.date >= filters.startDate;
+    const matchesEnd = !filters.endDate || expense.date <= filters.endDate;
+    const matchesSearch = expense.description.toLocaleLowerCase().includes(filters.search.trim().toLocaleLowerCase());
+    return matchesCategory && matchesStart && matchesEnd && matchesSearch;
+  });
 
-  const handleFilter = (filtered: Expense[]) => {
-    setFilteredExpenses(filtered);
-  };
+  const handleFilter = (next: { category: Expense['category'] | 'All'; startDate: string; endDate: string; search: string }) => setFilters(next);
 
   const handleLoadDemo = () => {
     if (allExpenses.length > 0 && !window.confirm('Loading demo expenses will delete and replace your current entries. Continue?')) {
@@ -43,13 +46,13 @@ function App() {
           {/* Left column - Form and Filters */}
           <aside className="sidebar">
             <ExpenseForm />
-            <ExpenseFilter expenses={allExpenses} onFilter={handleFilter} onLoadDemo={handleLoadDemo} />
+            <ExpenseFilter onFilter={handleFilter} onLoadDemo={handleLoadDemo} />
           </aside>
 
           {/* Right column - Summary and List */}
           <section className="content">
             <SummaryCards expenses={filteredExpenses} />
-            <ExpenseList expenses={filteredExpenses} />
+            <ExpenseList expenses={filteredExpenses} hasActiveFilters={filteredExpenses.length !== allExpenses.length} />
           </section>
         </div>
       </main>

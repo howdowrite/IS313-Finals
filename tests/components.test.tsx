@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ExpenseFilter } from '../src/components/ExpenseFilter'
 import { ExpenseForm } from '../src/components/ExpenseForm'
@@ -50,15 +50,28 @@ describe('ExpenseFilter', () => {
     const onFilter = vi.fn()
     render(<ExpenseFilter expenses={expenses} onFilter={onFilter} />)
     fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'Food' } })
-    // The component applies the filter with the prior state in the same change event.
-    expect(onFilter).toHaveBeenLastCalledWith(expenses)
+    expect(onFilter).toHaveBeenLastCalledWith({ category: 'Food', startDate: '', endDate: '', search: '' })
 
     fireEvent.change(screen.getByLabelText('From'), { target: { value: '2024-01-20' } })
-    expect(onFilter).toHaveBeenLastCalledWith([expenses[0]])
+    expect(onFilter).toHaveBeenLastCalledWith({ category: 'Food', startDate: '2024-01-20', endDate: '', search: '' })
     fireEvent.click(screen.getByRole('button', { name: 'Clear Filters' }))
-    expect(onFilter).toHaveBeenLastCalledWith(expenses)
+    expect(onFilter).toHaveBeenLastCalledWith({ category: 'All', startDate: '', endDate: '', search: '' })
     expect(screen.getByLabelText('Category')).toHaveValue('All')
     expect(screen.getByLabelText('From')).toHaveValue('')
+    expect(screen.getByLabelText('Search expenses')).toHaveValue('')
+  })
+
+  it('searches descriptions without regard to capitalization and combines search with other filters', () => {
+    const onFilter = vi.fn()
+    render(<ExpenseFilter expenses={expenses} onFilter={onFilter} />)
+    fireEvent.change(screen.getByLabelText('Search expenses'), { target: { value: 'LUNCH' } })
+    expect(onFilter).toHaveBeenLastCalledWith({ category: 'All', startDate: '', endDate: '', search: 'LUNCH' })
+
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'Transport' } })
+    expect(onFilter).toHaveBeenLastCalledWith({ category: 'Transport', startDate: '', endDate: '', search: 'LUNCH' })
+
+    fireEvent.change(screen.getByLabelText('Search expenses'), { target: { value: '' } })
+    expect(onFilter).toHaveBeenLastCalledWith({ category: 'Transport', startDate: '', endDate: '', search: '' })
   })
 })
 
@@ -76,6 +89,11 @@ describe('ExpenseList', () => {
   it('shows the empty state', () => {
     render(<ExpenseList expenses={[]} />)
     expect(screen.getByText('No expenses yet. Add your first expense above!')).toBeInTheDocument()
+  })
+
+  it('shows a filter-specific empty state when no expenses match', () => {
+    render(<ExpenseList expenses={[]} hasActiveFilters />)
+    expect(screen.getByText('No expenses match your search and filters. Try adjusting them or clear filters.')).toBeInTheDocument()
   })
 })
 

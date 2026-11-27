@@ -3,9 +3,10 @@ import { useExpenses } from '../hooks/useExpenses';
 
 interface ExpenseListProps {
   expenses: Expense[];
+  hasActiveFilters?: boolean;
 }
 
-export function ExpenseList({ expenses }: ExpenseListProps) {
+export function ExpenseList({ expenses, hasActiveFilters = false }: ExpenseListProps) {
   const { deleteExpense } = useExpenses();
 
   const formatCurrency = (amount: number) => {
@@ -30,7 +31,9 @@ export function ExpenseList({ expenses }: ExpenseListProps) {
   if (expenses.length === 0) {
     return (
       <div className="expense-list empty">
-        <p className="empty-message">No expenses yet. Add your first expense above!</p>
+        <p className="empty-message">
+          {hasActiveFilters ? 'No expenses match your search and filters. Try adjusting them or clear filters.' : 'No expenses yet. Add your first expense above!'}
+        </p>
       </div>
     );
   }
