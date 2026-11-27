@@ -275,6 +275,31 @@ body {
   background: #1565c0;
 }
 
+.demo-expenses-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.btn-demo {
+  flex-shrink: 0;
+  padding: 0.45rem 0.7rem;
+  background: transparent;
+  color: var(--secondary);
+  border: 1px solid var(--secondary);
+  font-size: 0.8rem;
+}
+
+.btn-demo:hover {
+  background: #e3f2fd;
+}
+
 .btn-danger {
   background: var(--danger);
   color: white;

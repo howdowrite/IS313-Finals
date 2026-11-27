@@ -5,9 +5,10 @@ import type { Expense, Category } from '../utils/expenseCalculator';
 interface ExpenseFilterProps {
   expenses: Expense[];
   onFilter: (filtered: Expense[]) => void;
+  onLoadDemo?: () => void;
 }
 
-export function ExpenseFilter({ expenses, onFilter }: ExpenseFilterProps) {
+export function ExpenseFilter({ expenses, onFilter, onLoadDemo }: ExpenseFilterProps) {
   const [category, setCategory] = useState<Category | 'All'>('All');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -80,6 +81,15 @@ export function ExpenseFilter({ expenses, onFilter }: ExpenseFilterProps) {
       }}>
         Clear Filters
       </button>
+
+      {onLoadDemo && (
+        <div className="demo-expenses-action">
+          <span>Need some data to explore?</span>
+          <button type="button" className="btn btn-demo" onClick={onLoadDemo}>
+            Load demo expenses
+          </button>
+        </div>
+      )}
     </div>
   );
 }

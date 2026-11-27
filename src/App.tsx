@@ -8,7 +8,7 @@ import { useExpenses } from './hooks/useExpenses';
 import './App.css';
 
 function App() {
-  const { expenses: allExpenses, isLoading } = useExpenses();
+  const { expenses: allExpenses, isLoading, loadDemoExpenses } = useExpenses();
   const [filteredExpenses, setFilteredExpenses] = useState<Expense[]>(allExpenses);
 
   // Update filtered expenses when allExpenses changes (initial load)
@@ -18,6 +18,13 @@ function App() {
 
   const handleFilter = (filtered: Expense[]) => {
     setFilteredExpenses(filtered);
+  };
+
+  const handleLoadDemo = () => {
+    if (allExpenses.length > 0 && !window.confirm('Loading demo expenses will delete and replace your current entries. Continue?')) {
+      return;
+    }
+    loadDemoExpenses();
   };
 
   if (isLoading) {
@@ -36,7 +43,7 @@ function App() {
           {/* Left column - Form and Filters */}
           <aside className="sidebar">
             <ExpenseForm />
-            <ExpenseFilter expenses={allExpenses} onFilter={handleFilter} />
+            <ExpenseFilter expenses={allExpenses} onFilter={handleFilter} onLoadDemo={handleLoadDemo} />
           </aside>
 
           {/* Right column - Summary and List */}

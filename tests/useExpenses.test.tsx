@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { useExpenses } from '../src/hooks/useExpenses'
+import { demoExpenses, useExpenses } from '../src/hooks/useExpenses'
 
 const storageKey = 'expense-tracker-expenses'
 
@@ -67,5 +67,17 @@ describe('useExpenses', () => {
 
     expect(() => result.current.updateExpense(id, { amount: -1 })).toThrow('Amount must be greater than zero')
     expect(result.current.expenses[0].amount).toBe(4)
+  })
+
+  it('loads the demo expenses and replaces the current list', async () => {
+    const saved = [{ id: 'saved', description: 'Tea', amount: 3, category: 'Food', date: '2024-01-01' }]
+    vi.mocked(localStorage.getItem).mockReturnValue(JSON.stringify(saved))
+    const { result } = renderHook(() => useExpenses())
+    await waitFor(() => expect(result.current.isLoading).toBe(false))
+
+    act(() => result.current.loadDemoExpenses())
+
+    await waitFor(() => expect(result.current.expenses).toEqual(demoExpenses))
+    expect(result.current.expenses).not.toContainEqual(saved[0])
   })
 })
